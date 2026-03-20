@@ -100,3 +100,71 @@ describe('TodoCard Component', () => {
     expect(screen.queryByText(/Due:/)).not.toBeInTheDocument();
   });
 });
+
+describe('TodoCard overdue badge', () => {
+  const mockHandlers = {
+    onToggle: jest.fn(),
+    onEdit: jest.fn(),
+    onDelete: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers({ now: new Date('2026-03-20') });
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('renders "Overdue" badge for incomplete todo with past due date', () => {
+    const todo = { id: 1, title: 'Overdue task', dueDate: '2026-03-19', completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
+  });
+
+  it('does NOT render "Overdue" badge for completed todo with past due date', () => {
+    const todo = { id: 2, title: 'Done task', dueDate: '2026-03-19', completed: 1, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does NOT render "Overdue" badge for incomplete todo due today', () => {
+    const todo = { id: 3, title: 'Due today', dueDate: '2026-03-20', completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does NOT render "Overdue" badge for incomplete todo with no due date', () => {
+    const todo = { id: 4, title: 'No due date', dueDate: null, completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does NOT render "Overdue" badge for incomplete todo with future due date', () => {
+    const todo = { id: 5, title: 'Future task', dueDate: '2026-03-21', completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('badge has role="status" and accessible name including "Overdue"', () => {
+    const todo = { id: 6, title: 'Overdue task', dueDate: '2026-03-19', completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    const badge = screen.getByRole('status');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveAccessibleName(/Overdue/i);
+  });
+
+  it('badge element has className containing "overdue-badge"', () => {
+    const todo = { id: 7, title: 'Overdue task', dueDate: '2026-03-19', completed: 0, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    const badge = screen.getByText('Overdue');
+    expect(badge.className).toContain('overdue-badge');
+  });
+
+  it('badge does NOT appear when todo.completed === 1', () => {
+    const todo = { id: 8, title: 'Completed overdue', dueDate: '2026-03-19', completed: 1, createdAt: '2026-01-01T00:00:00Z' };
+    render(<TodoCard todo={todo} {...mockHandlers} isLoading={false} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+});
