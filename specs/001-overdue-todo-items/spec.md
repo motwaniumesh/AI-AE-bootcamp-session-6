@@ -12,28 +12,33 @@
   behaviours (filtering, searching, categorisation) are required.
 - **Persistence Impact**: No new mutations. Due date and completed fields already persist
   through the backend. Overdue status is derived at display time from existing data and
-  today's date; no storage schema changes are needed.
+  today's date; no storage schema changes are needed. The derivation is recalculated on
+  every render using the current date at render time (`Date.now()`); no timer, interval,
+  or refresh mechanism is introduced for midnight boundary transitions.
 - **Testing Strategy**: Tests are written first and must fail before implementation:
-  - Unit: `TodoCard` renders overdue styling when due date is past and todo is incomplete;
-    does not render overdue styling when completed; does not render overdue styling when
-    due date is today or in the future.
-  - Unit: date-comparison utility returns correct overdue boolean for boundary values
-    (yesterday, today, tomorrow).
+  - Unit: `packages/frontend/src/utils/__tests__/dateUtils.test.js` — `isOverdue()`
+    returns correct boolean for boundary values (yesterday → true, today → false,
+    tomorrow → false, null/undefined → false).
+  - Unit: `packages/frontend/src/components/__tests__/TodoCard.test.js` — `TodoCard`
+    renders the "Overdue" badge when due date is past and todo is incomplete; does not
+    render the badge when completed, when due today or future, or when no due date.
   - Integration: todo list renders a mix of overdue and non-overdue cards with correct
     visual treatment for each.
 - **UI & Accessibility Impact**: Overdue styling must use the documented danger colour
   (`#c62828` / `#ef5350` in dark mode), must not rely on colour alone (label required),
   must provide an accessible name on the overdue indicator, must work in both light and
-  dark mode, and must meet WCAG AA contrast.
+  dark mode, and must meet WCAG AA contrast. The indicator form is a danger-coloured
+  badge/pill with the text "Overdue" rendered below the due date text in the card content
+  area; the due date text itself retains its normal styling.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Visual Overdue Indicator on Todo Cards (Priority: P1)
 
 A user opens their todo list and can immediately see which incomplete todos have passed
-their due date. Each overdue card has a distinct visual treatment (danger-coloured text or
-badge with an "Overdue" label) so the user does not need to read or mentally compare
-individual dates.
+their due date. Each overdue card displays the existing due date text unchanged plus a
+danger-coloured badge/pill labelled "Overdue" directly below the due date, so the user
+does not need to read or mentally compare individual dates.
 
 **Why this priority**: This is the core value of the feature. Without it the feature
 does not exist. It can be built and validated entirely without any other story.
@@ -97,13 +102,12 @@ danger colour and maintains readable contrast.
 - **No due date**: Todos without a due date never display an overdue indicator.
 - **All todos overdue**: The list must render correctly when every todo is overdue, with
   no layout or contrast degradation.
+- **Midnight boundary (long-running session)**: Overdue state is recalculated per-render
+  against `Date.now()`. If the page remains open past midnight, the indicator will update
+  correctly on the next re-render (e.g., after the user interacts with any todo). No
+  automatic timer or background refresh is implemented; this is accepted behaviour.
 
 ## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
 
 ### Functional Requirements
 
@@ -118,8 +122,10 @@ danger colour and maintains readable contrast.
   overdue todo as complete, without requiring a page reload.
 - **FR-006**: The overdue indicator MUST disappear immediately when a user edits an
   overdue todo's due date to today or a future date.
-- **FR-007**: The overdue indicator MUST use the documented danger colour and MUST include
-  a visible text label "Overdue" (colour alone is insufficient).
+- **FR-007**: The overdue indicator MUST be a badge/pill rendered below the due date text
+  in the card content area, using the documented danger colour, and MUST include the
+  visible text label "Overdue" (colour alone is insufficient). The due date text itself
+  MUST retain its normal styling.
 - **FR-008**: The overdue indicator MUST carry an accessible name readable by screen
   readers.
 - **FR-009**: The overdue visual treatment MUST function correctly in both light and dark
@@ -139,13 +145,21 @@ danger colour and maintains readable contrast.
 - **Todo**: Existing entity. Relevant attributes: `dueDate` (optional date string,
   YYYY-MM-DD) and `completed` (boolean). Overdue status is a derived read-only property:
   `dueDate` is set, `dueDate` is strictly before today's date, and `completed` is false.
+- **isOverdue utility**: A pure function exported from
+  `packages/frontend/src/utils/dateUtils.js` with signature
+  `isOverdue(dueDate: string | null | undefined): boolean`. Performs date-only string
+  comparison (YYYY-MM-DD) against today; returns `false` for null, undefined, or
+  dates ≥ today.
+
+## Clarifications
+
+### Session 2026-03-20
+
+- Q: What is the exact visual form and placement of the overdue indicator on a TodoCard? → A: The due date text remains unchanged; a separate danger-coloured badge/pill labelled "Overdue" is rendered below the due date in the card content area (Option A).
+- Q: Where does the `isOverdue()` date-comparison logic live? → A: Standalone pure utility function in `packages/frontend/src/utils/dateUtils.js` (Option A).
+- Q: When is overdue status recalculated — per-render, on a timer, or on page load only? → A: Client-side, recalculated per-render against `Date.now()`; no timer or refresh mechanism needed.
 
 ## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
 
 ### Measurable Outcomes
 
