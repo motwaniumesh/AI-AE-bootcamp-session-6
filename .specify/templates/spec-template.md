@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+## Constitution Alignment *(mandatory)*
+
+- **Scope Fit**: [Explain how the change stays within the single-user todo scope or
+  describe the amendment required]
+- **Persistence Impact**: [Describe whether create/update/delete behavior or storage
+  semantics change]
+- **Testing Strategy**: [List the unit and integration tests that will be written first]
+- **UI & Accessibility Impact**: [Describe theme, responsive, focus, labeling, and light
+  or dark mode implications; write N/A only if there is no user-facing change]
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -89,6 +99,10 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+
+### Out of Scope *(mandatory)*
+
+- [Explicitly list nearby ideas that this feature will not implement]
 
 *Example of marking unclear requirements:*
 

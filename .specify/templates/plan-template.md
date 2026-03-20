@@ -31,7 +31,16 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Scope remains within the documented single-user todo app requirements, or the plan
+  includes an explicit approved amendment path.
+- The design preserves monorepo boundaries: React UI work stays in `packages/frontend`,
+  Express API work stays in `packages/backend`, and shared responsibilities remain clear.
+- Tests are defined before implementation for every changed behavior, with unit and
+  integration coverage identified and package test commands listed.
+- Any user-facing change documents theme, accessibility, responsive layout, and light or
+  dark mode implications.
+- Persistence, validation, and failure handling impacts are described for each mutation or
+  data-flow change.
 
 ## Project Structure
 
@@ -48,51 +57,28 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+packages/
+├── backend/
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── index.js
+│   │   └── services/
+│   └── __tests__/
+└── frontend/
+    ├── public/
+    └── src/
+        ├── components/
+        ├── services/
+        ├── styles/
+        └── __tests__/
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Use the existing npm workspaces monorepo. Place frontend UI and
+state changes in `packages/frontend/src`, backend API and persistence changes in
+`packages/backend/src`, and colocate tests in the matching package `__tests__/`
+directories.
 
 ## Complexity Tracking
 
